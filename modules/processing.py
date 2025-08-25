@@ -7,14 +7,25 @@ from typing import List, Dict, Any
 def split_sentences(text: str) -> List[Dict[str, Any]]:
     text = re.sub(r'\s+', ' ', text.strip())
     
-    sentence_endings = r'(?<!\b(?:Mr|Ms|Mrs|Dr|Prof|Sr|Jr|vs|etc|i\.e|e\.g|U\.S\.A|U\.K|U\.N))[.!?]+'
-    sentences = re.split(sentence_endings, text)
+    # Use simpler approach: split on sentence endings, then filter false positives
+    sentences = re.split(r'[.!?]+\s*', text)
+    
+    # Filter out empty sentences and common abbreviations
+    abbreviations = {'Mr', 'Ms', 'Mrs', 'Dr', 'Prof', 'Sr', 'Jr', 'vs', 'etc', 'i.e', 'e.g', 'U.S.A', 'U.K', 'U.N'}
     
     result = []
-    for idx, sentence in enumerate(sentences):
+    idx = 0
+    
+    for sentence in sentences:
         sentence = sentence.strip()
         if sentence:
+            # Check if this looks like an abbreviation fragment
+            words = sentence.split()
+            if len(words) == 1 and words[0] in abbreviations:
+                continue
+            
             result.append({"idx": idx, "content": sentence})
+            idx += 1
     
     return result
 
